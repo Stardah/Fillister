@@ -15,7 +15,7 @@ public:
 	void ApplyInpPause(long& pause);			// Save input value pause
 	void ApplySettings(long& lot, long& series, long& pause); // Memorize settings
 	void DrawMenu();
-	void DrawServiceScreen(long inputs[12], long encoderCounter);
+	void DrawServiceScreen(long inputs[3], long encoderCounter);
 	void DrawRunScreen(long lot, long series); // To display current length and parts
 	void Input(char word);
 	void DelLast();

@@ -69,12 +69,14 @@
 #define u String(char(198))
 #define ya String(char(199))
 
-String partiya = P + a + r + t + si + ya + ": ";
+String vsego = V + s + e + g + o + ": ";
 String seriya = S + e + r + si + ya + ": ";
 String iz = I + z;
-const int inpGapLot = 8;
+const int inpGapLot = 7;
 const int inpGapSeries = 7;
 const int inpGapPause = 8;
+const int inpLotLetters = 5;
+const int inpPauseLetters = 5;
 const int selectM = 0;
 const int amtInpM = 1;
 const int lagInpM = 2;
@@ -101,24 +103,20 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 	items[selectM][1] = "2-" + s + e + r + si + ya + " 3-" + s + d + v + si + g;
 
 	// curX = 1 - input lot, series
-	items[amtInpM][0] = partiya + "100";
-	items[amtInpM][1] = seriya + "100";
+	items[amtInpM][0] = vsego + "100";
+	items[amtInpM][1] = seriya + "20";
 
 	// curX = 2 - input cooldown
 	items[lagInpM][0] = P + a + y + z + a + " " + s + d + v + si + g + a;
 	items[lagInpM][1] = s + e + k + y + n + d + ": 4";
 
 	// curX = 3 - run screen
-	items[runM][0] = partiya + "100/100";
-	items[runM][1] = seriya + "100/100";
+	items[runM][0] = vsego;
+	items[runM][1] = seriya;
 	items[runM][2] = "0 " + l + si + s + t + o + v + "/" + ch + a + s;
 
 	// curX = 4 - service screen
 	items[serviceM][0] = P + r + o + b + e + g + " = ";
-
-	// Close curX = 2
-	//items[2][0] = P+r+o+d+o+l+zh+si+t+smyagkiy+':'+' '+'#';
-	//items[2][1] = P+r+o+g+r+a+m+m+a+':'+' '+'*';
 
 	lcd.print("  " + Z + a + g + r + y + z + k + a + "...");
 }
@@ -127,7 +125,7 @@ void Menu::UpdateValues(long lot, long series, long pause)
 {
 	if (menuMode == Menus::InpAmt)
 	{
-		items[amtInpM][0] = partiya + String(lot);
+		items[amtInpM][0] = vsego + String(lot);
 		items[amtInpM][1] = seriya + String(series);
 	}
 	else if (menuMode == Menus::InpPause)
@@ -142,7 +140,6 @@ void Menu::UpdateValues(long lot, long series, long pause)
 
 void Menu::DrawMenu()
 {
-	lcd.clear();
 	if ((menuMode == InpAmt || menuMode == InpPause) && upside) // cursor after selected line
 	{
 		lcd.setCursor(0, 1);
@@ -160,10 +157,10 @@ void Menu::DrawMenu()
 }
 
 ///
-/// Draw service menu
+// Draw service menu
 ///
-String inp[12];
-void Menu::DrawServiceScreen(long inputs[12], long encoderCounter)
+String inp[3];
+void Menu::DrawServiceScreen(long inputs[3], long encoderCounter)
 {
 
 	for (long i = 0; i< 12; i++)
@@ -171,18 +168,11 @@ void Menu::DrawServiceScreen(long inputs[12], long encoderCounter)
 		else inp[i] = "0";
 
 		items[serviceM][3] =
-			"FR1 = " + inp[0] +
-			" FR2 = " + inp[1];// 9 
+			"MoA = " + inp[0] +
+			" MoB = " + inp[1];// 9 
 		items[serviceM][4] =
-			"HD1 = " + inp[2] + // 14
-			" HD2 = " + inp[3];
-		items[serviceM][5] =
-			A + v + a + r + "= " + inp[4] +
-			" " + A + v + t + o + "= " + inp[5];
-		items[serviceM][6] =
-			N + o + zh + " = " + inp[6] +
-			" EAB=" + inp[10] + ":" + inp[11];
-		items[serviceM][7] = Ee + n + k + o + d + e + r + " = " + String(encoderCounter);
+			"Sound = " + inp[2] + // 14
+		items[serviceM][5] = Ee + n + k + o + d + e + r + " = " + String(encoderCounter);
 		lcd.clear();
 
 		if (upside)
@@ -202,16 +192,17 @@ void Menu::DrawServiceScreen(long inputs[12], long encoderCounter)
 }
 
 ///
-/// Draw run mode menu
+// Draw run mode menu
 ///
 void Menu::DrawRunScreen(long curLot, long curSeries)
 {
-	items[runM][0] = P + a + r + t + ":" + String(curLot) + "/" + String(lotCount);
-	items[runM][1] += S + e + r + ":" + String(curSeries) + "/" + String(seriesCount);
+	lcd.clear();
+	items[runM][0] = vsego + String(curLot) + "/" + String(lotCount);
+	items[runM][1] = seriya + String(curSeries) + "/" + String(seriesCount);
 }
 
 ///
-/// Switch to chosen menu mode
+// Switch to chosen menu mode
 ///
 void Menu::SetMenuMode(long newMenu)
 {
@@ -252,14 +243,19 @@ void Menu::ApplyInpAmt(long &lot, long &series)
 	lotCount = lot;
 	seriesCount = series;
 }
+
+///
 // Apply input for pause
+///
 void Menu::ApplyInpPause(long & pause)
 {
 	pause = items[lagInpM][1].substring(inpGapPause).toInt();
 	pauseShift = pause;
 }
 
+///
 // Service input
+///
 void Menu::ApplySettings(long & leng, long & amt, long & width)
 {
 	leng = items[serviceM][0].substring(11).toInt();
@@ -267,22 +263,21 @@ void Menu::ApplySettings(long & leng, long & amt, long & width)
 	width = items[serviceM][2].substring(11).toInt();
 }
 
-
 ///
-/// Input char
+// Input char
 ///
 void Menu::Input(char cha)
 {
 	if (menuMode == Menus::InpAmt)
 	{
-		if (upside && items[curX][curY].length() < (inpGapLot + 5))  // "dlin: "  5 numbers
+		if (upside && items[curX][curY].length() < (inpGapLot + inpLotLetters))  // "dlin: "  5 numbers
 			items[curX][curY] += cha;
-		if (!upside && items[curX][curY + 1].length() < (inpGapSeries + 5))  // "kol: " 5 numbers
+		if (!upside && items[curX][curY + 1].length() < (inpGapSeries + inpLotLetters))  // "kol: " 5 numbers
 			items[curX][curY + 1] += cha;
 	}
 	else if (menuMode == Menus::InpPause)
 	{
-		if (items[curX][curY + 1].length() < (inpGapPause + 3))  // "kol: " 5 numbers
+		if (items[curX][curY + 1].length() < (inpGapPause + inpPauseLetters))  // "kol: " 5 numbers
 			items[curX][curY + 1] += cha;
 	}
 	else if (curY<3) // Service
@@ -305,7 +300,7 @@ void Menu::Input(char cha)
 }
 
 ///
-/// Delete last symbol
+// Delete last symbol
 ///
 void Menu::DelLast()
 {

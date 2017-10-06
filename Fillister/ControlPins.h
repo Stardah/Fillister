@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 enum class pins {
-	motorA = 20, motorB = 21, sensor = 21, sound = 24
+	motorA = 22, motorB = 23, sensor = 21, sound = 24
 };
 
 class ControlPins
@@ -14,15 +14,10 @@ public:
 		return bool(digitalRead(num));
 	};
 	void Reset();
-	void Start(long newlength, long newparts, long encoderValue);
+	void Start(long newlength, long newparts, int mod, long encoderValue);
 	void Stop();
-	bool* ScanPins();
 	void UpdateInputs(long encoderValue);
-	void AnyKey() 
-	{
-		if (programMod == 2) 
-			isPauseTime = false;
-	};
+	void AnyKey();
 
 	// Setters/getters
 	//
@@ -51,6 +46,7 @@ public:
 private:
 	void RunGear();
 	void StopGear();
+	void DisableGear();
 	void HandMode(long encoderValue);
 	void HalfHandMod(long encoderValue);
 	void AutoMod(long encoderValue);
@@ -60,7 +56,6 @@ private:
 	bool engineA = false;	// out on - 0
 	bool engineB = false;	// out on - 0
 	bool sound = false;		// out on - 0
-	bool runOn = false;
 	// 
 	bool firstIteration = true;
 	bool changeFlag = false;
@@ -75,5 +70,5 @@ private:
 	long initialLotValue; // Encoder value at the moment when lot started
 	long initialSeriesValue; // Encoder value at the moment when seria started
 	long coolDown = 0;
-	long timer = 0;
+	long pauseTimer = 0;
 };

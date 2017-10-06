@@ -45,13 +45,11 @@ volatile long encoderValue = 0; // Encoder mm counter
 								  // Settings
 long eps = 11;
 long epsOld = 11;
-long coolDown = 12;
-long coolDownOld = 12;
 //volatile bool encoderB = false;
 long kostyl = 0; // TODO replace it with timer
-long programMode = 0;
-long lotMax = 100;
-long seriesMax = 20;
+long programMod = 0;
+long lotMax = 10;
+long seriesMax = 2;
 long pauseShift = 10;
 
 void Addprog(long leng, long amt)
@@ -75,11 +73,9 @@ void setup()
 	coolDownOld = coolDown;
 	nozhOld = nozh;
 	*/
-	controlPins.SetCoolDown(coolDown);
-	
+	controlPins.SetCoolDown(pauseShift);
 	//setup
 	lcd.begin(16, 2);
-
 	 // ??? recover previous prog
 	menu.UpdateValues(lotMax, seriesMax, pauseShift);
 	menu.DrawMenu();
@@ -96,22 +92,24 @@ void loop()
 	//
 
 	kostyl++;
-	if (kostyl > 2000)
+	if (kostyl > 3000)
 	{
 		if (progRun)
 		{
+			controlPins.UpdateInputs(encoderValue);
 			menu.DrawRunScreen(controlPins.GetLot(encoderValue), controlPins.GetSeries(encoderValue)); // Display current values
-			menu.DrawMenu();
-			kostyl = 0;
-			if (controlPins.GetLot(encoderValue) >= lotMax)
+			if (programMod != 1 && controlPins.GetLot(encoderValue) >= lotMax)
 			{
+				menu.DrawMenu();
+				delay(4000);
 				progRun = false;
 				lcd.cursor();
 				lcd.blink();
 				controlPins.Reset();
-				menu.SetMenuMode(Menus::InpAmt);
-				menu.DrawMenu();
+				menu.SetMenuMode(Menus::Select);
 			}
+			else 
+				menu.DrawMenu();
 		}
 		else
 			if (serviceOn)
@@ -124,7 +122,7 @@ void loop()
 	{
 		if (serviceOn) ServiceMode(key);
 		else if (progRun) RunningMode(key);
-		else if (programMode == 0) SelectMode(key);
+		else if (programMod == 0) SelectMode(key);
 		else if (isInputAmt) InputAmtMode(key);
 		else InputPauseMode(key);
 		menu.DrawMenu();  // Update Menu
@@ -138,12 +136,12 @@ void UpdateSettings()
 		EEPROM.write(0, eps);
 		epsOld = eps;
 	}
-	if (coolDown != coolDownOld)
+	/*if (coolDown != coolDownOld)
 	{
 		EEPROM.write(1, highByte(coolDown));
 		EEPROM.write(2, lowByte(coolDown));
 		coolDownOld = coolDown;
-	}
+	}*/
 }
 
 long inputs[3];
@@ -172,9 +170,9 @@ void ServiceMode(char key)
 		break;
 	case 'D':
 		serviceOn = false;
-		menu.ApplySettings(lotMax, seriesMax, coolDown); // Get input
+		menu.ApplySettings(lotMax, seriesMax, pauseShift); // Get input
 		//UpdateSettings();
-		controlPins.SetCoolDown(coolDown); // Update eps and coolDown in controlPins
+		controlPins.SetCoolDown(pauseShift); // Update eps and coolDown in controlPins
 		menu.SetMenuMode(Menus::Select);
 		menu.DrawMenu();
 		break;
@@ -198,12 +196,14 @@ void RunningMode(char key)
 		lcd.cursor();
 		lcd.blink();
 		progRun = false;
-		//controlPins.Stop();
-		//controlPins.Reset();
-		programMode = 0;
+		controlPins.Stop();
+		controlPins.Reset();
+		programMod = 0;
 		menu.SetMenuMode(Menus::Select);
+		delay(200);
 		break;
 	default:
+		controlPins.AnyKey();
 		break;
 	}
 }
@@ -230,8 +230,9 @@ void InputPauseMode(char key)
 		menu.ApplyInpPause(pauseShift); //!!!!!
 		lcd.noCursor();
 		lcd.noBlink();
-		//controlPins.Reset();
-		//controlPins.Start(programs.leng, programs.amt, encoderCounter);
+		controlPins.Reset();
+		controlPins.SetCoolDown(pauseShift);
+		controlPins.Start(lotMax, seriesMax, programMod, encoderValue);
 		progRun = true;
 		menu.DrawRunScreen(lotMax, seriesMax); //!!!!!
 		menu.SetMenuMode(Menus::Run);
@@ -259,19 +260,19 @@ void InputAmtMode(char key)
 		break;
 	case 'D':
 		isInputAmt = false;
-		programMode = 0;
+		programMod = 0;
 		menu.SetMenuMode(Menus::Select);
 		break;
 	case 'A':
 		isInputAmt = false;
 		encoderValue = 0;
 		menu.ApplyInpAmt(lotMax, seriesMax);
-		if (programMode == 2)
+		if (programMod == 2)
 		{
 			lcd.noCursor();
 			lcd.noBlink();
-			//controlPins.Reset();
-			//controlPins.Start(programs.leng, programs.amt, encoderCounter);
+			controlPins.Reset();
+			controlPins.Start(lotMax, seriesMax, programMod, encoderValue);
 			progRun = true;
 			menu.DrawRunScreen(lotMax, seriesMax); //!!!!!
 			menu.SetMenuMode(Menus::Run);
@@ -296,26 +297,26 @@ void SelectMode(char key)
 		menu.DrawRunScreen(0, 0); //!!!!!
 		menu.SetMenuMode(Menus::Run);
 		progRun = true;
-		programMode = 1;
+		programMod = 1;
 		break;
 	case '2':
 		isInputAmt = true;
 		menu.SetMenuMode(Menus::InpAmt);
 		lcd.cursor();
 		lcd.blink();
-		programMode = 2;
+		programMod = 2;
 		break;
 	case '3':
 		isInputAmt = true;
 		menu.SetMenuMode(Menus::InpAmt);
 		lcd.cursor();
 		lcd.blink();
-		programMode = 3;
+		programMod = 3;
 		break;
 	case '*': // Service
 		serviceOn = true;
 		menu.SetMenuMode(Menus::Service);
-		menu.UpdateValues(lotMax, seriesMax, coolDown);
+		menu.UpdateValues(lotMax, seriesMax, pauseShift);
 		break;
 	default:
 		menu.Input(key);
@@ -325,8 +326,8 @@ void SelectMode(char key)
 
 void EncoderChange() // Interruption
 {
-	if (digitalRead(21) != 0) // Read encoderB
-		encoderValue++;
-	else
+	if (digitalRead((int)pins::sensor) != 0) // Read encoderB
 		encoderValue--;
+	else
+		encoderValue++;
 };
