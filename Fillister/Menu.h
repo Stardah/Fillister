@@ -9,14 +9,14 @@ public:
 	Menu(const LiquidCrystal& lcdInit);
 	~Menu() = default;
 
-	void UpdateValues(long leng, long amt, long width); //
+	void UpdateValues(long lot, long series, long pause); //
 	void SetMenuMode(long newMenu);		// Switches mode
-	void ApplyInpAmt(long& lot, long& seria);	// Save input values (lot, series)
+	void ApplyInpAmt(long& lot, long& series);	// Save input values (lot, series)
 	void ApplyInpPause(long& pause);			// Save input value pause
-	void ApplySettings(long& leng, long& amt, long& width); // Memorize settings
+	void ApplySettings(long& lot, long& series, long& pause); // Memorize settings
 	void DrawMenu();
 	void DrawServiceScreen(long inputs[12], long encoderCounter);
-	void DrawRunScreen(long length, long parts); // To display current length and parts
+	void DrawRunScreen(long lot, long series); // To display current length and parts
 	void Input(char word);
 	void DelLast();
 	void Up();

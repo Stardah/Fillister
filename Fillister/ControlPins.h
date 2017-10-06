@@ -2,9 +2,7 @@
 #include <Arduino.h>
 
 enum class pins {
-	encoderA = 20, encoderB = 21, knife = 50, forRev1 = 48, forRev2 = 46,
-	handDrive1 = 44, handDrive2 = 42, emergency = 40, handAuto = 38,
-	gearRev = 22, gearForv = 24, gearSpeed = 23, sound = 25
+	motorA = 20, motorB = 21, sensor = 21, sound = 24
 };
 
 class ControlPins
@@ -16,65 +14,66 @@ public:
 		return bool(digitalRead(num));
 	};
 	void Reset();
-	void Start(long newlength, long newparts, long encoderCounter);
+	void Start(long newlength, long newparts, long encoderValue);
 	void Stop();
 	bool* ScanPins();
-	long UpdateInputs(long encoderCounter);
-
-	void SetEpsCool(long eps_, long coolDown_, long nozh_)
+	void UpdateInputs(long encoderValue);
+	void AnyKey() 
 	{
-		eps = eps_;
+		if (programMod == 2) 
+			isPauseTime = false;
+	};
+
+	// Setters/getters
+	//
+
+	void SetCoolDown(long coolDown_)
+	{
 		coolDown = coolDown_;
-		nozh = nozh_;
-	};
-	long GetLength()
-	{
-		//if (knifeSwitch) return length;
-		return encoderCounterRef - encoderLength;
-	};
-	long GetParts()
-	{
-		return encoderParts;
 	};
 
-	bool GetAuto()
+	void SetLotSeriaMod(long lot, long series, int mod) 
 	{
-		return ifAuto;
+		lotMax = lot;
+		seriesMax = series;
+		programMod = mod;
+	};
+
+	long GetLot(long encoderValue)
+	{
+		return encoderValue - initialLotValue;
+	};
+	long GetSeries(long encoderValue)
+	{
+		return encoderValue - initialSeriesValue;
 	};
 	~ControlPins();
 private:
 	void RunGear();
 	void StopGear();
-	void HandMode(long encoderCounter);
-	long AutoMod(long encoderCounter);
+	void HandMode(long encoderValue);
+	void HalfHandMod(long encoderValue);
+	void AutoMod(long encoderValue);
 	void Sound(long time);
-	// Hand 
-	bool forRev1 = false;
-	bool forRev2 = false;
-	bool handDrive1 = false;
-	bool handDrive2 = false;
-	// All
-	bool emergency = false;
-	// Auto
-	bool ifAuto = false;
-	bool gearForv = true;	// out
-	bool gearSpeed = true;	// out
-							//bool sound = false;		// out
-	bool knife = false;
-
-	bool knifeSwitch = false;
+	// All pins
+	//
+	bool engineA = false;	// out on - 0
+	bool engineB = false;	// out on - 0
+	bool sound = false;		// out on - 0
 	bool runOn = false;
-	bool rollback = false;
+	// 
 	bool firstIteration = true;
-	//long encoderCounter = 0; // mm counter
-	long encoderLength = 0;
-	long encoderParts = 0;
-	long encoderCounterRef;
-	long length = 0;
-	long parts = 0;
-	long eps = 0;
+	bool changeFlag = false;
+	bool isPauseTime = false;
+	// Parameters
+	//
+	int programMod = 0;
+	long lotMax;
+	long seriesMax;
+	long curLot = 0;
+	long curSeries = 0;
+	long initialLotValue; // Encoder value at the moment when lot started
+	long initialSeriesValue; // Encoder value at the moment when seria started
 	long coolDown = 0;
-	long nozh = 5;
-	long kostyl = 0;
-	long notify = -1;
+	long timer = 0;
 };

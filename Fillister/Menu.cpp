@@ -100,7 +100,7 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 	items[selectM][0] = R + e + zh + si + m + ": 1-" + r + y + ch + n;
 	items[selectM][1] = "2-" + s + e + r + si + ya + " 3-" + s + d + v + si + g;
 
-	// curX = 1 - input lot, seria
+	// curX = 1 - input lot, series
 	items[amtInpM][0] = partiya + "100";
 	items[amtInpM][1] = seriya + "100";
 
@@ -204,10 +204,10 @@ void Menu::DrawServiceScreen(long inputs[12], long encoderCounter)
 ///
 /// Draw run mode menu
 ///
-void Menu::DrawRunScreen(long curLot, long curSeria)
+void Menu::DrawRunScreen(long curLot, long curSeries)
 {
 	items[runM][0] = P + a + r + t + ":" + String(curLot) + "/" + String(lotCount);
-	items[runM][1] += S + e + r + ":" + String(curSeria) + "/" + String(seriesCount);
+	items[runM][1] += S + e + r + ":" + String(curSeries) + "/" + String(seriesCount);
 }
 
 ///
