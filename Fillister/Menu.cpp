@@ -74,15 +74,15 @@ String seriya = S + e + r + si + ya + ": ";
 String iz = I + z;
 const int inpGapLot = 7;
 const int inpGapSeries = 7;
-const int inpGapPause = 8;
+const int inpGapPause = 9;
 const int inpLotLetters = 5;
 const int inpPauseLetters = 5;
 const int selectM = 0;
 const int amtInpM = 1;
 const int lagInpM = 2;
 const int runM = 3;
-const int serviceM = 3;
-
+const int serviceM = 4;
+const int countM = 5;
 Menu::Menu(const LiquidCrystal& lcdInit) :
 	lcd(lcdInit)
 {
@@ -108,15 +108,19 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 
 	// curX = 2 - input cooldown
 	items[lagInpM][0] = P + a + y + z + a + " " + s + d + v + si + g + a;
-	items[lagInpM][1] = s + e + k + y + n + d + ": 4";
+	items[lagInpM][1] = m+si+l+si+s + e + k + ": 4";
 
 	// curX = 3 - run screen
 	items[runM][0] = vsego;
 	items[runM][1] = seriya;
-	items[runM][2] = "0 " + l + si + s + t + o + v + "/" + ch + a + s;
+	items[runM][2] = "0 " + l + si + s + t + o + v + "/" + m + si + n;
 
 	// curX = 4 - service screen
 	items[serviceM][0] = P + r + o + b + e + g + " = ";
+
+	// curX = 5 - count screen
+	//items[countM][0] = vsego + ": 0";
+	//items[countM][1] = " ";
 
 	lcd.print("  " + Z + a + g + r + y + z + k + a + "...");
 }
@@ -134,12 +138,18 @@ void Menu::UpdateValues(long lot, long series, long pause)
 	}
 	else if (menuMode == Menus::Service) // Service
 	{
-		items[serviceM][0] = T + o + ch + n + o + s + t + smyagkiy + " = " + String(lot);
+		items[serviceM][0] = P+r+o+b+e+g + " = " + String(lot);
 	}
+}
+
+void Menu::SetPerfomance(long perfomance)
+{
+	items[runM][2] = String(perfomance)+" " + l + si + s + t + o + v + "/" + m + si + n;
 }
 
 void Menu::DrawMenu()
 {
+	lcd.clear();
 	if ((menuMode == InpAmt || menuMode == InpPause) && upside) // cursor after selected line
 	{
 		lcd.setCursor(0, 1);
@@ -162,32 +172,27 @@ void Menu::DrawMenu()
 String inp[3];
 void Menu::DrawServiceScreen(long inputs[3], long encoderCounter)
 {
-
-	for (long i = 0; i< 12; i++)
+	for (long i = 0; i< 3; i++)
 		if (inputs[i] == 1) inp[i] = "1";
-		else inp[i] = "0";
+			else inp[i] = "0";
 
-		items[serviceM][3] =
-			"MoA = " + inp[0] +
-			" MoB = " + inp[1];// 9 
-		items[serviceM][4] =
-			"Sound = " + inp[2] + // 14
-		items[serviceM][5] = Ee + n + k + o + d + e + r + " = " + String(encoderCounter);
-		lcd.clear();
+		items[serviceM][1] = "MoA = " + inp[0] + " MoB = " + inp[1];
+		items[serviceM][2] = "Sound = " + inp[2];
+		items[serviceM][3] = D + a + t + ch + si + k + " = " + String(encoderCounter);
 
 		if (upside)
 		{
 			lcd.setCursor(0, 1);
-			lcd.print(items[curX][curY + 1]);
+			lcd.print(items[serviceM][curY + 1]);
 			lcd.setCursor(0, 0);
-			lcd.print(items[curX][curY]);
+			lcd.print(items[serviceM][curY]);
 		}
 		else
 		{
 			lcd.setCursor(0, 0);
-			lcd.print(items[curX][curY]);
+			lcd.print(items[serviceM][curY]);
 			lcd.setCursor(0, 1);
-			lcd.print(items[curX][curY + 1]);
+			lcd.print(items[serviceM][curY + 1]);
 		}
 }
 
@@ -196,9 +201,14 @@ void Menu::DrawServiceScreen(long inputs[3], long encoderCounter)
 ///
 void Menu::DrawRunScreen(long curLot, long curSeries)
 {
-	lcd.clear();
 	items[runM][0] = vsego + String(curLot) + "/" + String(lotCount);
 	items[runM][1] = seriya + String(curSeries) + "/" + String(seriesCount);
+}
+
+void Menu::DrawCounterScreen(long curLot)
+{
+	items[countM][0] = vsego + String(curLot);
+	items[countM][1] = " ";
 }
 
 ///
@@ -208,7 +218,6 @@ void Menu::SetMenuMode(long newMenu)
 {
 	upside = true;
 	menuMode = Menus(newMenu);
-	lcd.clear();
 	curY = 0;
 	switch (newMenu)
 	{
@@ -227,6 +236,9 @@ void Menu::SetMenuMode(long newMenu)
 		break;
 	case Run:
 		curX = runM;
+		break;
+	case Count:
+		curX = countM;
 		break;
 	default:
 		break;
@@ -342,20 +354,20 @@ void Menu::Down()
 {
 	lcd.clear();
 	if (upside) upside = !upside;
-	else
-		if (menuMode == Menus::Service)
-			if (curY < maxY - 1)
-				++curY;
+	else if (menuMode == Menus::Service && curY < maxY - 3)
+		++curY;
+	else if (menuMode == Menus::Run && curY < 2)
+		++curY;
 }
 
 void Menu::Up()
 {
 	lcd.clear();
 	if (!upside) upside = !upside;
-	else
-		if (menuMode == Menus::Service)
-			if (curY > 0)
+	else if (menuMode == Menus::Service && curY > 0)
 				--curY;
+	else if (menuMode == Menus::Run && curY > 0)
+			--curY;
 }
 
 

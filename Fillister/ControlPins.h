@@ -57,16 +57,12 @@ private:
 	bool engineB = false;	// out on - 0
 	bool sound = false;		// out on - 0
 	// 
-	bool firstIteration = true;
-	bool changeFlag = false;
 	bool isPauseTime = false;
 	// Parameters
 	//
 	int programMod = 0;
 	long lotMax;
 	long seriesMax;
-	long curLot = 0;
-	long curSeries = 0;
 	long initialLotValue; // Encoder value at the moment when lot started
 	long initialSeriesValue; // Encoder value at the moment when seria started
 	long coolDown = 0;
