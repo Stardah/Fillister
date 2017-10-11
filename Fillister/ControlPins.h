@@ -24,7 +24,7 @@ public:
 
 	void SetCoolDown(long coolDown_)
 	{
-		coolDown = coolDown_;
+		coolDown = coolDown_*1000;
 	};
 
 	void SetLotSeriaMod(long lot, long series, int mod) 

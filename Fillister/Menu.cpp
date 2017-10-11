@@ -72,11 +72,13 @@
 String vsego = V + s + e + g + o + ": ";
 String seriya = S + e + r + si + ya + ": ";
 String iz = I + z;
+String lagInpText1 = s + e + k + y + n + d + ": ";
+String serviceText1 = P + r + o + b + e + g;
 const int inpGapLot = 7;
 const int inpGapSeries = 7;
-const int inpGapPause = 9;
+const int inpGapPause = 8;
 const int inpLotLetters = 5;
-const int inpPauseLetters = 5;
+const int inpPauseLetters = 3;
 const int selectM = 0;
 const int amtInpM = 1;
 const int lagInpM = 2;
@@ -108,7 +110,7 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 
 	// curX = 2 - input cooldown
 	items[lagInpM][0] = P + a + y + z + a + " " + s + d + v + si + g + a;
-	items[lagInpM][1] = m+si+l+si+s + e + k + ": 4";
+	items[lagInpM][1] = lagInpText1 + "4";
 
 	// curX = 3 - run screen
 	items[runM][0] = vsego;
@@ -116,7 +118,7 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 	items[runM][2] = "0 " + l + si + s + t + o + v + "/" + m + si + n;
 
 	// curX = 4 - service screen
-	items[serviceM][0] = P + r + o + b + e + g + " = ";
+	items[serviceM][0] = serviceText1 + " = ";
 
 	// curX = 5 - count screen
 	//items[countM][0] = vsego + ": 0";
@@ -125,7 +127,7 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 	lcd.print("  " + Z + a + g + r + y + z + k + a + "...");
 }
 
-void Menu::UpdateValues(long lot, long series, long pause)
+/*void Menu::UpdateValues(long lot, long series, long pause)
 {
 	if (menuMode == Menus::InpAmt)
 	{
@@ -138,9 +140,9 @@ void Menu::UpdateValues(long lot, long series, long pause)
 	}
 	else if (menuMode == Menus::Service) // Service
 	{
-		items[serviceM][0] = P+r+o+b+e+g + " = " + String(lot);
+		items[serviceM][0] = serviceText1 + " = " + String(lot);
 	}
-}
+}*/
 
 void Menu::SetPerfomance(long perfomance)
 {
@@ -170,12 +172,13 @@ void Menu::DrawMenu()
 // Draw service menu
 ///
 String inp[3];
-void Menu::DrawServiceScreen(long inputs[3], long encoderCounter)
+void Menu::DrawServiceScreen(long inputs[3], long encoderCounter, long probeg)
 {
 	for (long i = 0; i< 3; i++)
 		if (inputs[i] == 1) inp[i] = "1";
 			else inp[i] = "0";
-
+		
+		items[serviceM][0] = serviceText1 + " = " + String(probeg);
 		items[serviceM][1] = "MoA = " + inp[0] + " MoB = " + inp[1];
 		items[serviceM][2] = "Sound = " + inp[2];
 		items[serviceM][3] = D + a + t + ch + si + k + " = " + String(encoderCounter);
@@ -259,20 +262,10 @@ void Menu::ApplyInpAmt(long &lot, long &series)
 ///
 // Apply input for pause
 ///
-void Menu::ApplyInpPause(long & pause)
+void Menu::ApplyInpPause(int & pause)
 {
 	pause = items[lagInpM][1].substring(inpGapPause).toInt();
 	pauseShift = pause;
-}
-
-///
-// Service input
-///
-void Menu::ApplySettings(long & leng, long & amt, long & width)
-{
-	leng = items[serviceM][0].substring(11).toInt();
-	amt = items[serviceM][1].substring(11).toInt();
-	width = items[serviceM][2].substring(11).toInt();
 }
 
 ///

@@ -167,7 +167,7 @@ void ControlPins::AutoMod(long encoderValue)
 
 void ControlPins::Sound(long mls)
 {
-	digitalWrite((long)pins::sound, LOW);
+	//digitalWrite((long)pins::sound, LOW);
 	delay(mls);
 	digitalWrite((long)pins::sound, HIGH);
 }
