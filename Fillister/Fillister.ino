@@ -14,11 +14,13 @@
 // Display
 LiquidCrystal lcd(19, 18, 17, 16, 15, 14);
 
-// Keypad
+// Keypad-------------------------------------------------------------------
+//
+
 const byte ROWS = 4; // Four rows
 const byte COLS = 4; // Four columns
 char keys[ROWS][COLS] =
-{ // Array buttons-chars
+{
 	{ '1','2','3','A' },
 	{ '4','5','6','B' },
 	{ '7','8','9','C' },
@@ -28,9 +30,11 @@ byte rowPins[ROWS] = { 66, 67, 68, 69 }; // Connect to the row pinouts of the ke
 byte colPins[COLS] = { 62, 63, 64, 65 }; // Connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
-// End keypad
+//-------------------------------------------------------------------------
 
 // External classes
+//
+
 Menu menu(lcd);	// Menu update
 ControlPins controlPins(20); // Pins state update, error = 20
 
@@ -41,6 +45,8 @@ bool isInputAmt = false;
 volatile long encoderValue = 0; // Encoder mm counter
 
 // Settings
+//
+
 long timer = 0;
 long programMod = 0;
 long lotMax = 10;
@@ -50,37 +56,22 @@ long probeg = 0;
 
 unsigned long starttime;
 
-// резисторы делителя напряжения
-const float r1 = 99700;  // 100K
-const float r2 = 9870;  // 10K
-float Vcc = 0.0;
-float MaxVoltage = 0.0;
-
 #define A_PIN 1
 void setup()
 {
-	//Serial.begin(9600);
 	// Oпределение опорного напряжения
 	analogReference(DEFAULT);  // DEFAULT INTERNAL использовать Vcc как AREF
-	Vcc = readVcc();
-	MaxVoltage = Vcc / (r2 / (r1 + r2));
 	analogWrite(A_PIN, 0);
-
-	Serial.print("Vcc = ");
-	Serial.println(Vcc);
-	Serial.print("Max V. = ");
-	Serial.println(MaxVoltage);
-	Serial.println("---");
 	//-----------------------------------------------
 
-	//read settings
+	// Read settings
+	ReadData();
 	controlPins.SetCoolDown(pauseShift);
-	//setup
+	// Setup
 	lcd.begin(16, 2);
 	menu.DrawMenu();
 
 	attachInterrupt(2, EncoderChange, FALLING);
-
 }
 
 void loop()
@@ -96,12 +87,12 @@ void loop()
 	{
 		// Update Vcc
 		//
-		VccUpdate();
+		if (VccUpdate());
+			//SaveData();
 		if (progRun)
 		{
 			// Mode 1
 			//
-
 			if (programMod == 1)
 			{
 				menu.DrawCounterScreen(encoderValue); // Update Counter Screen
@@ -110,7 +101,6 @@ void loop()
 			
 			// Mode 2 or 3
 			//
-
 			else
 			{
 				controlPins.UpdateInputs(encoderValue);
@@ -219,6 +209,7 @@ void ReadData()
 		RunMod3(encoderValue, lotMax, seriesMax, pauseShift);
 		break;
 	default:
+		programMod = 0;
 		break;
 	}
 }
@@ -475,64 +466,34 @@ void EncoderChange() // Interruption
 
 
 // Vcc
-// эту константу (typVbg) необходимо откалибровать индивидуально
-const float typVbg = 1.1; // 1.0 -- 1.2
-
-int i;
-float curVoltage;
-
-const byte COUNT = 5;
-void VccUpdate() {
-	Vcc = readVcc();
-	// считываем точное напряжение с A0, где будет находиться наш вольтметр с делителем напряжения
-	curVoltage = 0.0;
-	for (i = 0; i < COUNT; i++) {
-		curVoltage = curVoltage + analogRead(A_PIN);
-		delay(10);
-	}
-	curVoltage = curVoltage / COUNT;
-	float v = (curVoltage * Vcc) / 1024.0;
-	float v2 = v / (r2 / (r1 + r2));
+// Pезисторы делителя напряжения
+float VccUpdate() {
+	float v = (analogRead(A_PIN) * readVcc()) / 1024.0 * 10;
+	analogWrite(A_PIN, 0);
 
 	Serial.print("V = ");
-	Serial.print(v2);
+	Serial.print(v);
 	Serial.println();
 
-	analogWrite(A_PIN, 0);
+	return v;
 }
 
+const float typVbg = 1.1; // 1.0 -- 1.2
 float readVcc() {
-	byte i;
-	float result = 0.0;
-	float tmp = 0.0;
-
-	for (i = 0; i < 5; i++) {
-		// Read 1.1V reference against AVcc
-		// set the reference to Vcc and the measurement to the internal 1.1V reference
-#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
-		ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-#elif defined (__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
-		ADMUX = _BV(MUX5) | _BV(MUX0);
-#elif defined (__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
-		ADMUX = _BV(MUX3) | _BV(MUX2);
-#else
-		// works on an Arduino 168 or 328
-		ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+	// Read 1.1V reference against AVcc
+	// set the reference to Vcc and the measurement to the internal 1.1V reference
+#if defined(__AVR_ATmega2560__)
+	ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
 #endif
 
-		delay(3); // Wait for Vref to settle
-		ADCSRA |= _BV(ADSC); // Start conversion
-		while (bit_is_set(ADCSRA, ADSC)); // measuring
+	delay(3);				// Wait for Vref to settle
+	ADCSRA |= _BV(ADSC);	// Start conversion
+	while (bit_is_set(ADCSRA, ADSC)); // Measuring
 
-		uint8_t low = ADCL; // must read ADCL first - it then locks ADCH
-		uint8_t high = ADCH; // unlocks both
+	uint8_t low = ADCL;		// Must read ADCL first - it then locks ADCH
+	uint8_t high = ADCH;	// Unlocks both
 
-		tmp = (high << 8) | low;
-		tmp = (typVbg * 1023.0) / tmp;
-		result = result + tmp;
-		delay(5);
-	}
-
-	result = result / 5;
-	return result;
+	float tmp = (high << 8) | low;
+	tmp = (typVbg * 1023.0) / tmp;
+	return tmp;
 }
