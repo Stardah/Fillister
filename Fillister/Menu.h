@@ -11,6 +11,12 @@ public:
 
 	//void UpdateValues(long lot, long series, long pause); // lot, series. pauseShift
 	void SetPerfomance(long perfomance);
+	void SetParameters(long lotMax, long seriesMax, long pause) 
+	{
+		lotCount = lotMax;
+		seriesCount = seriesMax;
+		pauseShift = pause;
+	};
 	void SetMenuMode(long newMenu);		// Switches mode
 	void ApplyInpAmt(long& lot, long& series);	// Save input values (lot, series)
 	void ApplyInpPause(int& pause);			// Save input value pause
@@ -38,6 +44,4 @@ private:
 	long lotCount;
 	long seriesCount;
 	long pauseShift;
-	long length = 0;
-	long parts = 0;
 };

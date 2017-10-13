@@ -5,10 +5,14 @@ ControlPins::ControlPins(long error_)
 	pinMode((long)pins::motorA, OUTPUT);
 	pinMode((long)pins::motorB, OUTPUT);
 	pinMode((long)pins::sound, OUTPUT);
+	pinMode((long)pins::lastone, OUTPUT);
 	pinMode((long)pins::sensor, INPUT);
+	pinMode((long)pins::power, INPUT);
 	digitalWrite((long)pins::sound, HIGH);
 	digitalWrite((long)pins::motorA, HIGH);
 	digitalWrite((long)pins::motorB, HIGH);
+	digitalWrite((long)pins::power, HIGH);
+	digitalWrite((long)pins::lastone, HIGH);
 }
 
 ///
@@ -31,8 +35,6 @@ void ControlPins::Start(long newlotmax, long newseriamax, int mod, long encoderV
 	seriesMax = newseriamax;
 	initialLotValue = encoderValue; // set init value for current lot
 	initialSeriesValue = encoderValue;
-	//RunGear();
-	//if (ifAuto) Sound(700);
 }
 
 
@@ -75,8 +77,8 @@ void ControlPins::StopGear()
 ///
 void ControlPins::DisableGear()
 {
-	digitalWrite((long)pins::motorA, LOW);
-	digitalWrite((long)pins::motorB, LOW);
+	digitalWrite((long)pins::motorA, HIGH);
+	digitalWrite((long)pins::motorB, HIGH);
 }
 
 ///

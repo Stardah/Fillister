@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 enum class pins {
-	motorA = 22, motorB = 23, sensor = 21, sound = 24
+	motorA = 22, motorB = 23, sensor = 21, sound = 24, power = 3, lastone = 25
 };
 
 class ControlPins
@@ -25,6 +25,11 @@ public:
 	void SetCoolDown(long coolDown_)
 	{
 		coolDown = coolDown_*1000;
+	};
+
+	void SetInitialSeries(long series)
+	{
+		initialSeriesValue = series;
 	};
 
 	void SetLotSeriaMod(long lot, long series, int mod) 

@@ -56,14 +56,8 @@ long probeg = 0;
 
 unsigned long starttime;
 
-#define A_PIN 1
 void setup()
 {
-	// Oпределение опорного напряжения
-	analogReference(DEFAULT);  // DEFAULT INTERNAL использовать Vcc как AREF
-	analogWrite(A_PIN, 0);
-	//-----------------------------------------------
-
 	// Read settings
 	ReadData();
 	controlPins.SetCoolDown(pauseShift);
@@ -72,6 +66,7 @@ void setup()
 	menu.DrawMenu();
 
 	attachInterrupt(2, EncoderChange, FALLING);
+	attachInterrupt(1, PowerDown, RISING);
 }
 
 void loop()
@@ -87,8 +82,6 @@ void loop()
 	{
 		// Update Vcc
 		//
-		if (VccUpdate());
-			//SaveData();
 		if (progRun)
 		{
 			// Mode 1
@@ -104,6 +97,7 @@ void loop()
 			else
 			{
 				controlPins.UpdateInputs(encoderValue);
+			
 				// Perfomance
 				if (micros() - starttime>10000000)
 				{
@@ -118,6 +112,7 @@ void loop()
 				}
 				// Update Run Screen
 				menu.DrawRunScreen(controlPins.GetLot(encoderValue), controlPins.GetSeries(encoderValue)); // Display current values
+				
 				// Redraw Screen
 				if (controlPins.GetLot(encoderValue) >= lotMax)
 				{
@@ -199,14 +194,16 @@ void ReadData()
 		encoderValue = ReadLong(1);
 		lotMax = ReadLong(5);
 		seriesMax = ReadLong(9);
-		RunMod2(encoderValue, lotMax, seriesMax);
+		RunMod2(lotMax, seriesMax);
 		break;
 	case 3:
 		encoderValue = ReadLong(1);
 		lotMax = ReadLong(5);
 		seriesMax = ReadLong(9);
 		pauseShift = EEPROM.read(13) * 256 + EEPROM.read(14);
-		RunMod3(encoderValue, lotMax, seriesMax, pauseShift);
+		RunMod3(lotMax, seriesMax, pauseShift);
+		Serial.print(pauseShift);
+		Serial.println();
 		break;
 	default:
 		programMod = 0;
@@ -223,34 +220,31 @@ void RunMod1()
 	programMod = 1;
 }
 
-void RunMod2(long curLot, long lotMax, long seriesMax)
+void RunMod2(long lotMax, long seriesMax)
 {
 	progRun = true;
-	lcd.noCursor();
-	lcd.noBlink();
-
 	starttime = micros();
-	encoderValue = curLot;
 	controlPins.Reset();
-	controlPins.Start(lotMax, seriesMax, 2, encoderValue);
-	menu.DrawRunScreen(curLot, 0);
+	controlPins.Start(lotMax, seriesMax, 2, 0);
+	menu.SetParameters(lotMax, seriesMax, 0);
+	menu.DrawRunScreen(encoderValue, 0);
 	menu.SetMenuMode(Menus::Run);
 }
 
-void RunMod3(long curLot, long lotMax, long seriesMax, int pauseShift)
+void RunMod3(long lotMax, long seriesMax, int pauseShift)
 {
 	progRun = true;
-	lcd.noCursor();
-	lcd.noBlink();
-
-	encoderValue = curLot;
 	starttime = micros();
-	menu.ApplyInpPause(pauseShift);
 	controlPins.Reset();
 	controlPins.SetCoolDown(pauseShift);
-	controlPins.Start(lotMax, seriesMax, 3, encoderValue);
-	menu.DrawRunScreen(curLot, 0);
+	controlPins.Start(lotMax, seriesMax, 3, 0);
+	controlPins.SetInitialSeries(encoderValue);
+	menu.SetParameters(lotMax, seriesMax, pauseShift);
+	menu.DrawRunScreen(encoderValue, 0);
 	menu.SetMenuMode(Menus::Run);
+
+	Serial.print("Mod3");
+	Serial.println();
 }
 
 void WriteLong(int address, long value)
@@ -464,36 +458,8 @@ void EncoderChange() // Interruption
 		encoderValue++;
 }
 
-
-// Vcc
-// Pезисторы делителя напряжения
-float VccUpdate() {
-	float v = (analogRead(A_PIN) * readVcc()) / 1024.0 * 10;
-	analogWrite(A_PIN, 0);
-
-	Serial.print("V = ");
-	Serial.print(v);
-	Serial.println();
-
-	return v;
-}
-
-const float typVbg = 1.1; // 1.0 -- 1.2
-float readVcc() {
-	// Read 1.1V reference against AVcc
-	// set the reference to Vcc and the measurement to the internal 1.1V reference
-#if defined(__AVR_ATmega2560__)
-	ADMUX = _BV(REFS0) | _BV(MUX4) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-#endif
-
-	delay(3);				// Wait for Vref to settle
-	ADCSRA |= _BV(ADSC);	// Start conversion
-	while (bit_is_set(ADCSRA, ADSC)); // Measuring
-
-	uint8_t low = ADCL;		// Must read ADCL first - it then locks ADCH
-	uint8_t high = ADCH;	// Unlocks both
-
-	float tmp = (high << 8) | low;
-	tmp = (typVbg * 1023.0) / tmp;
-	return tmp;
+void PowerDown()
+{
+	if (digitalRead((int)pins::power) == 1) // Read encoderB
+		SaveData();
 }

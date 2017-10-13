@@ -127,23 +127,6 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 	lcd.print("  " + Z + a + g + r + y + z + k + a + "...");
 }
 
-/*void Menu::UpdateValues(long lot, long series, long pause)
-{
-	if (menuMode == Menus::InpAmt)
-	{
-		items[amtInpM][0] = vsego + String(lot);
-		items[amtInpM][1] = seriya + String(series);
-	}
-	else if (menuMode == Menus::InpPause)
-	{
-		items[lagInpM][1] = String(pause);
-	}
-	else if (menuMode == Menus::Service) // Service
-	{
-		items[serviceM][0] = serviceText1 + " = " + String(lot);
-	}
-}*/
-
 void Menu::SetPerfomance(long perfomance)
 {
 	items[runM][2] = String(perfomance)+" " + l + si + s + t + o + v + "/" + m + si + n;
