@@ -30,6 +30,7 @@ void ControlPins::Reset()
 ///
 void ControlPins::Start(long newlotmax, long newseriamax, int mod, long encoderValue)
 {
+	isPauseTime = false;
 	programMod = mod;
 	lotMax = newlotmax;
 	seriesMax = newseriamax;
@@ -43,7 +44,6 @@ void ControlPins::Start(long newlotmax, long newseriamax, int mod, long encoderV
 ///
 void ControlPins::Stop()
 {
-	StopGear();
 	if (programMod == 3)
 	{
 		Sound(100);
@@ -57,6 +57,7 @@ void ControlPins::RunGear()
 {
 	digitalWrite((long)pins::motorA, HIGH);
 	digitalWrite((long)pins::motorB, LOW);
+	digitalWrite((long)pins::lastone, LOW);
 	delay(450);
 	DisableGear();
 }
@@ -67,6 +68,7 @@ void ControlPins::RunGear()
 void ControlPins::StopGear()
 {
 	digitalWrite((long)pins::motorA, LOW);
+	digitalWrite((long)pins::motorB, HIGH);
 	digitalWrite((long)pins::motorB, HIGH);
 	delay(450);
 	DisableGear();
@@ -123,15 +125,15 @@ void ControlPins::HalfHandMod(long encoderValue)
 	{
 		if ((encoderValue - initialSeriesValue) >= seriesMax)
 		{
-			Sound(100);
 			StopGear();			// Stop engine
 			isPauseTime = true;	// Press anykey...
 			initialSeriesValue = encoderValue; // Update seria start point
+			Sound(100);
 		}
 		if ((encoderValue - initialLotValue) >= lotMax)
 		{
-			Sound(200);
 			Stop();
+			Sound(200);
 		}
 	}
 }
@@ -143,13 +145,9 @@ void ControlPins::AutoMod(long encoderValue)
 {
 	if (isPauseTime)
 	{
-		//++pauseTimer;
-		//if (pauseTimer > coolDown)
-		//{
 		delay(coolDown);
 		isPauseTime = false;
 		RunGear();
-		//}
 	}
 	else
 	{
@@ -158,7 +156,6 @@ void ControlPins::AutoMod(long encoderValue)
 			StopGear();			// Stop engine
 			initialSeriesValue = encoderValue; // Update seria start point
 			isPauseTime = true;	// Press anykey...
-			//pauseTimer = 0;		// Reset timer
 		}
 		if ((encoderValue - initialLotValue) >= lotMax)
 		{

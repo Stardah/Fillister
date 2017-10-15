@@ -121,8 +121,6 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 	items[serviceM][0] = serviceText1 + " = ";
 
 	// curX = 5 - count screen
-	//items[countM][0] = vsego + ": 0";
-	//items[countM][1] = " ";
 
 	lcd.print("  " + Z + a + g + r + y + z + k + a + "...");
 }
@@ -268,23 +266,6 @@ void Menu::Input(char cha)
 		if (items[curX][curY + 1].length() < (inpGapPause + inpPauseLetters))  // "kol: " 5 numbers
 			items[curX][curY + 1] += cha;
 	}
-	else if (curY<3) // Service
-	{
-		if (upside && curY == 2 && items[curX][curY].length() < 12) // 'noh = ' 6 + 1 numb
-			items[curX][curY] += cha;
-		else
-			if (!upside && curY == 1 && items[curX][curY + 1].length() < 12)
-				items[curX][curY + 1] += cha;
-			else
-				if (upside && curY == 1 && items[curX][curY].length() < 15)
-					items[curX][curY] += cha;
-				else
-					if (upside && items[curX][curY].length() < 13)
-						items[curX][curY] += cha;
-					else
-						if (!upside && items[curX][curY + 1].length() < 15)
-							items[curX][curY + 1] += cha;
-	}
 }
 
 ///
@@ -313,37 +294,22 @@ void Menu::DelLast()
 			lcd.clear();
 		}
 	}
-	else if (curY<3) // Service
-	{
-		if (upside && items[curX][curY].length() > 11) //"dlin: " - 6
-		{
-			items[curX][curY] = items[curX][curY].substring(0, items[curX][curY].length() - 1);
-		}
-		if (!upside && items[curX][curY + 1].length() > 11) // "kol: "- 5
-		{
-			items[curX][curY + 1] = items[curX][curY + 1].substring(0, items[curX][curY + 1].length() - 1);
-		}
-	}
 }
 
 void Menu::Down()
 {
 	lcd.clear();
-	if (upside) upside = !upside;
-	else if (menuMode == Menus::Service && curY < maxY - 3)
-		++curY;
-	else if (menuMode == Menus::Run && curY < 2)
-		++curY;
+	if (menuMode == Menus::Service && curY < maxY - 3) ++curY;
+	else if (upside) upside = !upside;
+	else if (menuMode == Menus::Run && curY < 2) ++curY;
 }
 
 void Menu::Up()
 {
 	lcd.clear();
-	if (!upside) upside = !upside;
-	else if (menuMode == Menus::Service && curY > 0)
-				--curY;
-	else if (menuMode == Menus::Run && curY > 0)
-			--curY;
+	if (menuMode == Menus::Service && curY > 0) --curY;
+	else if (!upside) upside = !upside;
+	else if (menuMode == Menus::Run && curY > 0) --curY;
 }
 
 

@@ -14,7 +14,7 @@ public:
 		return bool(digitalRead(num));
 	};
 	void Reset();
-	void Start(long newlength, long newparts, int mod, long encoderValue);
+	void Start(long newLotMax, long newSeriaMax, int mod, long encoderValue);
 	void Stop();
 	void UpdateInputs(long encoderValue);
 	void AnyKey();

@@ -85,7 +85,6 @@ void loop()
 		if (progRun)
 		{
 			// Mode 1
-			//
 			if (programMod == 1)
 			{
 				menu.DrawCounterScreen(encoderValue); // Update Counter Screen
@@ -93,7 +92,6 @@ void loop()
 			}
 			
 			// Mode 2 or 3
-			//
 			else
 			{
 				controlPins.UpdateInputs(encoderValue);
@@ -116,6 +114,7 @@ void loop()
 				// Redraw Screen
 				if (controlPins.GetLot(encoderValue) >= lotMax)
 				{
+					probeg += controlPins.GetLot(encoderValue);
 					menu.DrawMenu();
 					delay(4000);
 					progRun = false;
@@ -152,12 +151,14 @@ void loop()
 //  5,6,7,8		lotMax			long
 // 9,10,11,12	seriesMax		long
 //	13,14		pauseShift		int
+// 15,16,17,18	probeg			long
 
 
 void SaveData() 
 {
 	if (EEPROM.read(0)!=programMod)
 		EEPROM.write(0, programMod);
+	
 	switch (programMod)
 	{
 	case 2:
@@ -175,6 +176,7 @@ void SaveData()
 	default:
 		break;
 	}
+	WriteLong(15, probeg);
 }
 
 void ReadData() 
@@ -209,6 +211,8 @@ void ReadData()
 		programMod = 0;
 		break;
 	}
+
+	probeg = ReadLong(15);
 }
 
 void RunMod1()
@@ -282,11 +286,6 @@ void ServiceMode(char key)
 {
 	switch (key)
 	{
-	//case '*':
-	//	menu.DelLast();
-	//	break;
-	case '#':
-		break;
 	case 'B':
 		menu.Up();
 		break;
