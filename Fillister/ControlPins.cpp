@@ -46,7 +46,7 @@ void ControlPins::Stop()
 {
 	if (programMod == 3)
 	{
-		Sound(100);
+		//Sound(100);
 	}
 }
 
@@ -132,9 +132,14 @@ void ControlPins::HalfHandMod(long encoderValue)
 		}
 		if ((encoderValue - initialLotValue) >= lotMax)
 		{
-			Stop();
+			StopGear();
+			//Stop();
 			Sound(200);
 		}
+	}
+	else 
+	{
+		Sound(100);
 	}
 }
 
@@ -166,7 +171,7 @@ void ControlPins::AutoMod(long encoderValue)
 
 void ControlPins::Sound(long mls)
 {
-	//digitalWrite((long)pins::sound, LOW);
+	digitalWrite((long)pins::sound, LOW);
 	delay(mls);
 	digitalWrite((long)pins::sound, HIGH);
 }

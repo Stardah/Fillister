@@ -319,6 +319,7 @@ void RunningMode(char key)
 		progRun = false;
 		if (programMod != 1)
 		{
+			controlPins.StopGear();
 			controlPins.Stop();
 			controlPins.Reset();
 		}

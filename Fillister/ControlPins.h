@@ -48,9 +48,9 @@ public:
 		return encoderValue - initialSeriesValue;
 	};
 	~ControlPins();
+	void StopGear();
 private:
 	void RunGear();
-	void StopGear();
 	void DisableGear();
 	void HandMode(long encoderValue);
 	void HalfHandMod(long encoderValue);
