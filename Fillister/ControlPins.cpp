@@ -8,7 +8,7 @@ ControlPins::ControlPins(long error_)
 	pinMode((long)pins::lastone, OUTPUT);
 	pinMode((long)pins::sensor, INPUT);
 	pinMode((long)pins::power, INPUT);
-	digitalWrite((long)pins::sound, HIGH);
+	digitalWrite((long)pins::sound, LOW);
 	digitalWrite((long)pins::motorA, HIGH);
 	digitalWrite((long)pins::motorB, HIGH);
 	digitalWrite((long)pins::power, HIGH);
@@ -28,14 +28,14 @@ void ControlPins::Reset()
 ///
 // Initialize variables
 ///
-void ControlPins::Start(long newlotmax, long newseriamax, int mod, long encoderValue)
+void ControlPins::Start(long newlotmax, long newseriamax, int mod, long currentLot)
 {
 	isPauseTime = false;
 	programMod = mod;
 	lotMax = newlotmax;
 	seriesMax = newseriamax;
-	initialLotValue = encoderValue; // set init value for current lot
-	initialSeriesValue = encoderValue;
+	initialLotValue = currentLot; // set init value for current lot
+	//initialSeriesValue = encoderValue;
 }
 
 
@@ -171,9 +171,9 @@ void ControlPins::AutoMod(long encoderValue)
 
 void ControlPins::Sound(long mls)
 {
-	digitalWrite((long)pins::sound, LOW);
-	delay(mls);
 	digitalWrite((long)pins::sound, HIGH);
+	delay(mls);
+	digitalWrite((long)pins::sound, LOW);
 }
 
 ControlPins::~ControlPins()

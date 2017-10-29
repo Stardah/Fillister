@@ -21,7 +21,7 @@ public:
 	void ApplyInpAmt(long& lot, long& series);	// Save input values (lot, series)
 	void ApplyInpPause(int& pause);			// Save input value pause
 	void DrawMenu();
-	void DrawServiceScreen(long inputs[3], long encoderValue, long probeg);
+	void DrawServiceScreen(long inputs[3], long encoderValue, long probeg, long pp);
 	void DrawRunScreen(long lot, long series); // To display current length and parts
 	void DrawCounterScreen(long curLot);
 	void Input(char word);
@@ -41,7 +41,7 @@ private:
 	long curX = 0;
 	long curY = 0;
 	bool upside = true;
-	long lotCount;
-	long seriesCount;
+	long lotCount = 0;
+	long seriesCount = 0;
 	long pauseShift;
 };

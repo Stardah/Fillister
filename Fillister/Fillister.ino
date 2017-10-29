@@ -12,7 +12,7 @@
 #include <EEPROM.h>
 
 // Display
-LiquidCrystal lcd(19, 18, 17, 16, 15, 14);
+LiquidCrystal lcd(8, 9, 10, 11, 12, 13);
 
 // Keypad-------------------------------------------------------------------
 //
@@ -53,6 +53,7 @@ long lotMax = 10;
 long seriesMax = 2;
 int pauseShift = 4;
 long probeg = 0;
+long pp = 0;
 
 unsigned long starttime;
 
@@ -65,8 +66,8 @@ void setup()
 	lcd.begin(16, 2);
 	menu.DrawMenu();
 
-	attachInterrupt(2, EncoderChange, FALLING);
-	attachInterrupt(1, PowerDown, RISING);
+	attachInterrupt((uint8_t)pins::sensorInt, EncoderChange, FALLING);
+	attachInterrupt((uint8_t)pins::powerInt, PowerDown, RISING);
 }
 
 void loop()
@@ -97,21 +98,19 @@ void loop()
 				controlPins.UpdateInputs(encoderValue);
 			
 				// Perfomance
-				if (micros() - starttime>10000000)
+				if (micros() - starttime>60000000)
 				{
-					/*Serial.print(micros());
-					Serial.print(" - ");
-					Serial.print(starttime);
-					Serial.print(" = ");
-					Serial.println(micros() - starttime);
-					*/
 					starttime = micros();
-					menu.SetPerfomance(controlPins.GetLot(encoderValue) * 6);
+					if (controlPins.GetLot(encoderValue)!=0)
+						pp = controlPins.GetLot(encoderValue);
+					menu.SetPerfomance(pp);
 				}
 				// Update Run Screen
-				menu.DrawRunScreen(controlPins.GetLot(encoderValue), controlPins.GetSeries(encoderValue)); // Display current values
+				menu.DrawRunScreen(
+					controlPins.GetLot(encoderValue), 
+					controlPins.GetSeries(encoderValue)); // Display current values
 				
-				// Redraw Screen
+				// End
 				if (controlPins.GetLot(encoderValue) >= lotMax)
 				{
 					probeg += controlPins.GetLot(encoderValue);
@@ -122,14 +121,15 @@ void loop()
 					controlPins.Reset();
 					menu.SetMenuMode(Menus::Select);
 					menu.DrawMenu();
+					UpdateData();
 				}
-				else 
+				else //Redraw Screen
 					menu.DrawMenu();
 			}				
 		}
 		else
 			if (serviceOn)
-				menu.DrawServiceScreen(PinsUpdate(), encoderValue, probeg);
+				menu.DrawServiceScreen(PinsUpdate(), encoderValue, probeg, pp);
 		timer = 0;
 	}
 
@@ -215,6 +215,13 @@ void ReadData()
 	probeg = ReadLong(15);
 }
 
+/// RewriteData if need to
+void UpdateData() 
+{
+	if (EEPROM.read(0)!=0)
+		SaveData();
+}
+
 void RunMod1()
 {
 	menu.DrawCounterScreen(0);
@@ -230,9 +237,17 @@ void RunMod2(long lotMax, long seriesMax)
 	starttime = micros();
 	controlPins.Reset();
 	controlPins.Start(lotMax, seriesMax, 2, 0);
+	controlPins.SetInitialSeries(encoderValue);
 	menu.SetParameters(lotMax, seriesMax, 0);
 	menu.DrawRunScreen(encoderValue, 0);
 	menu.SetMenuMode(Menus::Run);
+
+	Serial.print("Mod2");
+	Serial.println();
+	Serial.print(lotMax);
+	Serial.println();
+	Serial.print(seriesMax);
+	Serial.println();
 }
 
 void RunMod3(long lotMax, long seriesMax, int pauseShift)
@@ -325,6 +340,8 @@ void RunningMode(char key)
 		}
 		programMod = 0;
 		menu.SetMenuMode(Menus::Select);
+
+		UpdateData();
 		break;
 	default:
 		controlPins.AnyKey();
@@ -460,6 +477,6 @@ void EncoderChange() // Interruption
 
 void PowerDown()
 {
-	if (digitalRead((int)pins::power) == 1) // Read encoderB
+	if (digitalRead((int)pins::power) == 1) 
 		SaveData();
 }

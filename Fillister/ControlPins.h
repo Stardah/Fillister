@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 enum class pins {
-	motorA = 22, motorB = 23, sensor = 21, sound = 24, power = 3, lastone = 25
+	motorA = 22, motorB = 23, sensor = 21, sensorInt = 2, sound = 26, power = 19, powerInt = 4, lastone = 25
 };
 
 class ControlPins

@@ -74,6 +74,7 @@ String seriya = S + e + r + si + ya + ": ";
 String iz = I + z;
 String lagInpText1 = s + e + k + y + n + d + ": ";
 String serviceText1 = P + r + o + b + e + g;
+String ppText = " " + l + si + s + t + o + v + "/" + m + si + n;
 const int inpGapLot = 7;
 const int inpGapSeries = 7;
 const int inpGapPause = 8;
@@ -115,7 +116,7 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 	// curX = 3 - run screen
 	items[runM][0] = vsego;
 	items[runM][1] = seriya;
-	items[runM][2] = "0 " + l + si + s + t + o + v + "/" + m + si + n;
+	items[runM][2] = "0" + ppText;
 
 	// curX = 4 - service screen
 	items[serviceM][0] = serviceText1 + " = ";
@@ -127,7 +128,7 @@ Menu::Menu(const LiquidCrystal& lcdInit) :
 
 void Menu::SetPerfomance(long perfomance)
 {
-	items[runM][2] = String(perfomance)+" " + l + si + s + t + o + v + "/" + m + si + n;
+	items[runM][2] = String(perfomance)+ ppText;
 }
 
 void Menu::DrawMenu()
@@ -153,16 +154,17 @@ void Menu::DrawMenu()
 // Draw service menu
 ///
 String inp[3];
-void Menu::DrawServiceScreen(long inputs[3], long encoderCounter, long probeg)
+void Menu::DrawServiceScreen(long inputs[3], long encoderCounter, long probeg, long pp)
 {
 	for (long i = 0; i< 3; i++)
 		if (inputs[i] == 1) inp[i] = "1";
 			else inp[i] = "0";
 		
 		items[serviceM][0] = serviceText1 + " = " + String(probeg);
-		items[serviceM][1] = "MoA = " + inp[0] + " MoB = " + inp[1];
-		items[serviceM][2] = "Sound = " + inp[2];
-		items[serviceM][3] = D + a + t + ch + si + k + " = " + String(encoderCounter);
+		items[serviceM][1] = String(pp) + ppText;
+		items[serviceM][2] = "MoA = " + inp[0] + " MoB = " + inp[1];
+		items[serviceM][3] = "Sound = " + inp[2];
+		items[serviceM][4] = D + a + t + ch + si + k + " = " + String(encoderCounter);
 
 		if (upside)
 		{
@@ -300,16 +302,16 @@ void Menu::Down()
 {
 	lcd.clear();
 	if (menuMode == Menus::Service && curY < maxY - 3) ++curY;
-	else if (upside) upside = !upside;
 	else if (menuMode == Menus::Run && curY < 2) ++curY;
+	else if (upside) upside = !upside;
 }
 
 void Menu::Up()
 {
 	lcd.clear();
 	if (menuMode == Menus::Service && curY > 0) --curY;
-	else if (!upside) upside = !upside;
 	else if (menuMode == Menus::Run && curY > 0) --curY;
+	else if (!upside) upside = !upside;
 }
 
 
